@@ -1,3 +1,3 @@
 [submodule "genmo"]
-	path = genmo
+	path = src/genmo
 	url = git@github.com:washingtonsteven/genmo.git
