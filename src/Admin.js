@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import GridSizer from './admin/GridSizer';
 import GridSelector from './admin/GridSelector';
 import TileEditor from './admin/TileEditor';
+import GenmoJSONCompiler from './admin/GenmoJSONCompiler';
 
 class Admin extends Component {
   constructor(props) {
@@ -55,6 +56,7 @@ class Admin extends Component {
         <GridSizer rows={this.state.gridSize.rows} cols={this.state.gridSize.cols} onUpdate={(newSize) => { this.updateGridSize(newSize); }} />
         <GridSelector currentTile={this.state.currentTile} size={this.state.gridSize} onUpdate={(newTile) => { this.updateCurrentTile(newTile); }} />
         <TileEditor tileData={this.currentCellData()} onUpdate={(newTileData) => { this.updateCurrentTileData(newTileData); }} />
+        <GenmoJSONCompiler genmoState={this.state} />
       </div>
     );
   }

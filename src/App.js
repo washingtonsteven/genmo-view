@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Genmo from './genmo';
-import world_data from './genmo/data/data.json';
+//import world_data from './genmo/data/data.json';
+import world_data from './data/test1.json';
 
 class DisplayMessage extends Component {
   render() {
