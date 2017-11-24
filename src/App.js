@@ -1,97 +1,93 @@
 import React, { Component } from 'react';
-import Genmo from './genmo';
-//import world_data from './genmo/data/data.json';
-import world_data from './data/test1.json';
-
-class DisplayMessage extends Component {
-  render() {
-    return (
-      <div className="message"><pre>{this.props.message}</pre></div>
-    )
-  }
-}
-
-class ActionBar extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      buttons:[
-        'look',
-        'ls',
-        'move n', 
-        'move s',
-        'move e',
-        'move w',
-        'talk'
-      ]
-    }
-  }
-
-  actionButtons() {
-    let buttons = [];
-    for (let i = 0; i < this.state.buttons.length; i++) {
-      buttons.push(<button onClick={() => this.doAction(this.state.buttons[i])} key={i}>{this.state.buttons[i]}</button>);
-    }
-    return buttons;
-  }
-
-  doAction(action) {
-    if (this.props.action && typeof this.props.action === 'function') {
-      this.props.action(action);
-    }
-  }
-
-  render() {
-    return(
-      <div className="actionBar">
-        { this.actionButtons() }
-      </div>
-    )
-  }
-}
+import DisplayMessage from './app/DisplayMessage';
+import ActionBar from './app/ActionBar';
+import genmo from './GenmoInstance';
+//import world_data from './data/test1.json';
 
 class App extends Component {
   constructor(props) {
     super(props);
 
-    this.genmo = new Genmo({
-      world_data,
-      output:(message, opts) => {
-        // this.state.messages.push(message);
-      }
-    });
+    genmo.setOutput(this.output.bind(this));
 
-    this.state = { genmoState:this.genmo.currentState() };
+    const defaultButtons = ['look', 'ls', 'move', 'talk']
+
+    this.state = { 
+      messages:[],
+      defaultButtons,
+      currentButtons:defaultButtons.slice(),
+    };
   }
 
-  allMessages() {
-    let displayMessages = [];
+  output(message, opts) {
+    const newState = Object.assign({}, this.state);
     
-    for(let i = 0; i < this.state.genmoState.length(); i++) {
-      const currentFrame = this.state.genmoState.get(i);
-      if (currentFrame.action === 'output')
-        displayMessages.push(<DisplayMessage message={currentFrame.value} key={currentFrame.key} />);
+    if (typeof message === "string") {
+      newState.messages.push(<DisplayMessage message={message} key={newState.messages.length} />);
+      this.setState(newState);
+    } else if (message.msg) {
+      newState.messages.push(<DisplayMessage message={message.msg} key={newState.messages.length} />);
+      this.setState(newState, () => {
+        this.updateActionBar(message);
+      });
     }
 
-    return displayMessages;
+    if (opts && opts.justMoved) {
+      this.newArea();
+    }
   }
 
-  updateState() {
-    this.setState({ genmoState:this.genmo.currentState() });
+  componentDidMount() {
+    genmo.sendCommand('look');
+    this.newArea();
+  }
+
+  newArea() {
+    this.resetActionBar(() => {
+      genmo.sendCommand('move');
+      genmo.sendCommand('talk');
+    })
+  }
+
+  resetActionBar(setStateCallback) {
+    const newState = Object.assign({}, this.state);
+    newState.currentButtons = newState.defaultButtons.slice();
+    this.setState(newState, () => { setStateCallback(); });
+  }
+
+  updateActionBar(message) {
+    const newState = Object.assign({}, this.state);
+    let currentButtons = newState.currentButtons;
+    const cmdIndex = currentButtons.indexOf(message.command);
+
+    const newButtons = [];
+    for (let i = 0; i < message.data.length; i++) {
+      if (message.command === 'talk') {
+        newButtons.push(`talk ${message.data[i].index}`); //TODO: print name here, need to separate button label and command sent
+      } else if (message.command === 'move') {
+        newButtons.push(`move ${message.data[i].val}`);
+      }
+    }
+
+    currentButtons.splice(cmdIndex+1, 0, ...newButtons);
+    const uniq = {};
+    newState.currentButtons = currentButtons.filter((v,i,a) => {
+      return uniq[v] ? false : uniq[v]=true;
+    });
+    
+    this.setState(newState);
   }
 
   sendCommand(command) {
-    this.genmo.sendCommand(command);
-    this.updateState();
+    genmo.sendCommand(command);
   }
 
   render() {
     return (
       <div className="App">
-        <ActionBar action={(a) => this.sendCommand(a)} />
+        <ActionBar action={(a) => this.sendCommand(a)} buttons={this.state.currentButtons} />
         <div className="messages">
-          { this.allMessages() }
+          { this.state.messages }
         </div>
       </div>
     );
