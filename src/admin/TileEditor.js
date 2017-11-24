@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-class TileDescriptionEditor extends Component {
+class TileEditor extends Component {
   // this has the data for the whole grid,
   // has a selected state like GridSelector
   // View is a set of fields for
@@ -9,16 +9,18 @@ class TileDescriptionEditor extends Component {
   //     - What they respond with
 
   update(e) {
-    this.props.onUpdate({description: e.target.value});
+    const currentData = Object.assign({}, this.props.tileData);
+    currentData[e.target.id] = e.target.value;
+    this.props.onUpdate(currentData);
   }
 
   render() {
     return(
-      <div className="tile-description-editor">
+      <div className="tile-editor">
         <textarea id="description" value={this.props.tileData.description} placeholder="description" onChange={(e) => this.update(e)} />
       </div>
     );
   }
 }
 
-export default TileDescriptionEditor;
+export default TileEditor;

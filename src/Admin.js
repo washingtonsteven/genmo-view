@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import GridSizer from './admin/GridSizer';
 import GridSelector from './admin/GridSelector';
-import TileDescriptionEditor from './admin/TileDescriptionEditor';
+import TileEditor from './admin/TileEditor';
 
 class Admin extends Component {
   constructor(props) {
@@ -54,7 +54,7 @@ class Admin extends Component {
         <h1>Admin Area</h1>
         <GridSizer rows={this.state.gridSize.rows} cols={this.state.gridSize.cols} onUpdate={(newSize) => { this.updateGridSize(newSize); }} />
         <GridSelector currentTile={this.state.currentTile} size={this.state.gridSize} onUpdate={(newTile) => { this.updateCurrentTile(newTile); }} />
-        <TileDescriptionEditor tileData={this.currentCellData()} onUpdate={(newTileData) => { this.updateCurrentTileData(newTileData); }} />
+        <TileEditor tileData={this.currentCellData()} onUpdate={(newTileData) => { this.updateCurrentTileData(newTileData); }} />
       </div>
     );
   }
