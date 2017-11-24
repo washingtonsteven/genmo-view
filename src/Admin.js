@@ -29,6 +29,7 @@ class GridSizer extends Component {
     }
   }
 
+  //TODO: instead of internal state, value=this.props.rows/cols, and onChange is this.props.onUpdate, to update parent state directly instead of having its own internal one
   render() {
     return(
       <div id="grid-sizer">
@@ -54,7 +55,13 @@ class GridSelector extends Component {
   updateCurrent(e) {
     const row = +e.target.dataset.coordsRow;
     const col = +e.target.dataset.coordsCol;
-    this.setState({ currentTile:{ row, col } }, () => { console.log('new current: '+this.state.currentTile.row+', '+this.state.currentTile.col) });
+    this.setState({ currentTile:{ row, col } }, () => { this.update(); });
+  }
+
+  update() {
+    if (this.props.onUpdate && typeof this.props.onUpdate === "function") {
+      this.props.onUpdate(this.state.currentTile);
+    }
   }
 
   render() {
@@ -76,9 +83,47 @@ class GridSelector extends Component {
 }
 
 class TileDescriptionEditor extends Component {
+  // this has the data for the whole grid,
+  // has a selected state like GridSelector
+  // View is a set of fields for
+  //   - description
+  //   - npcs
+  //     - What they respond with
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      grid:this.props.grid
+    };
+  }
+
+  updateTile(e) {
+    let newState = Object.assign({}, this.state);
+    newState.grid[this.currentIndex()] = { description:e.target.value };
+    this.setState(newState, () => { this.update() });
+  }
+
+  update() {
+    if (this.props.onUpdate && typeof this.props.onUpdate === "function") {
+      this.props.onUpdate(this.state.grid);
+    }
+  }
+
+  currentItem() {
+    return this.state.grid[this.currentIndex()] || {description:""};
+  }
+
+  currentIndex() {
+    const cr = this.props.currentTile.row;
+    const cc = this.props.currentTile.col;
+    return `${cr}x${cc}`;
+  }
+
   render() {
     return(
-      <div>TDE</div>
+      <div className="tile-description-editor">
+        <textarea id="description" value={this.currentItem().description} placeholder="description" onChange={(e) => this.updateTile(e)} />
+      </div>
     );
   }
 }
@@ -89,7 +134,8 @@ class Admin extends Component {
 
     this.state = {
       gridSize:{rows:1, cols:1},
-      startTile:{row:1, col:1}
+      currentTile:{row:1, col:1},
+      grid:{}
     }
   }
 
@@ -99,13 +145,17 @@ class Admin extends Component {
     this.setState(newState);
   }
 
+  //TODO: perhaps instead of children having their own state that they pass up to the parent, 
+  // have children report events to parent, and parent updates its own state
+  // which the children read from directly
+  // Currently, there is no single source of truth
   render() {
     return (
       <div className="admin">
         <h1>Admin Area</h1>
         <GridSizer startSize={this.state.gridSize} onUpdate={(newSize) => { this.updateState('gridSize', newSize); }} />
-        <GridSelector startTile={this.state.startTile} size={this.state.gridSize} />
-        <TileDescriptionEditor />
+        <GridSelector startTile={this.state.currentTile} size={this.state.gridSize} onUpdate={(newCurrent) => { this.updateState('currentTile', newCurrent); }} />
+        <TileDescriptionEditor currentTile={this.state.currentTile} grid={this.state.grid} onUpdate={(newGrid) => { this.updateState('grid', newGrid); }} />
       </div>
     );
   }
