@@ -36,7 +36,7 @@ class Admin extends Component {
   }
 
   currentCellData() {
-    return this.state.grid[this.currentIndex()] || {description:""};
+    return this.state.grid[this.currentIndex()] || {description:"", type:""};
   }
 
   currentIndex() {

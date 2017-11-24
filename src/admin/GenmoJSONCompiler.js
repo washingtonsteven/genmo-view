@@ -18,7 +18,7 @@ class GenmoJSONCompiler extends Component {
       map[row-1][col-1] = gridIndex;
       
       map_tiles[gridIndex] = {
-        type:"unknown", //TODO: add type to tile item thingy
+        type:currentTile.type,
         description: currentTile.description,
         npcs:[]
       };

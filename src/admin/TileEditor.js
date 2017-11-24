@@ -39,6 +39,7 @@ class TileEditor extends Component {
     return(
       <div className="tile-editor">
         <textarea id="description" value={this.props.tileData.description} placeholder="description" onChange={(e) => this.update(e)} /><br/>
+        <input type="text" id="type" placeholder="type" value={this.props.tileData.type} onChange={(e) => this.update(e)} /><br/>
         NPCs<br/>
         {this.displayNPCEditors()}
       </div>
